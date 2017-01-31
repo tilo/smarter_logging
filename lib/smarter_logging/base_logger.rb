@@ -11,7 +11,7 @@ module SmarterLogging
         log_filename = "./log/#{log_filename}"
       end
       @logger = Logger.new(log_filename)
-      @logger.formatter = nil # not needed
+      @logger.formatter = nil if @logger.respond_to?(:formatter)
     end
 
     private
