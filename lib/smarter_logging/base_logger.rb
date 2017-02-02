@@ -23,8 +23,9 @@ module SmarterLogging
       if block_given?
         begin
           start = Time.now.utc  # to measure duration of the block
-          yield(data)
+          result = yield(data)
           data[:duration] = ((Time.now.utc - start) * 1000).to_f.round(3) # in ms
+          result
 
         rescue => e
           data[:exception] = e
