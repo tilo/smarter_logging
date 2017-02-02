@@ -14,8 +14,6 @@ module SmarterLogging
       @logger.formatter = nil if @logger.respond_to?(:formatter)
     end
 
-    private
-
     # this wrapper around _log() handles blocks and errors which could handle in a block
     # if there is an exception during evaluation of the block, we log it as an anomaly and re-raise the exception
     def _log_wrapper(data={}, &block)
@@ -69,6 +67,7 @@ module SmarterLogging
       @logger << reformat( data ) + "\n"
     end
 
+    private
     # reformat incoming values, and make sure they are not listed in the Rails Filter Parameters
     def reformat(data)
       filtered_keys = Rails.application.config.filter_parameters.map{|x| x.to_s}
