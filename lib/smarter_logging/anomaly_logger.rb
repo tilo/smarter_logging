@@ -7,8 +7,6 @@ module SmarterLogging
       _log_wrapper(data, &block)
     end
 
-    private
-
     def _log(data)
       # If activity logging broke, make sure we log it as an anomaly:
       data[:anomaly] = data.delete(:activity) if data[:activity]
