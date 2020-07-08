@@ -9,7 +9,7 @@ Each log line starts with a UTC timestamp in [ISO8601 format](https://en.wikiped
 The advantage of ISO6801 timestamps is that they are both standardized / easy to parse, as well as human readable.
 
       time=2017-01-30T21:21:04.013Z activity=some_unique_name key1=value1 key2="value 2"
-      
+
 The only place where this gem is opinionated is that UTC time is used for logging.
 
 **Tip:** If you are currently not using UTC time in your application, you should seriously consider doing that - it makes it much easier analyzing logs and errors when dealing with clients which can be anywhere in the world.
@@ -18,7 +18,7 @@ Key goals:
 
 * get average call durations
 * get activity and anomaly logs
-* help forensics on any calls / trace incidents 
+* help forensics on any calls / trace incidents
 * quickly identify top anomalies
 * get timings for blocks of code
 
@@ -32,7 +32,7 @@ Add this line to your application's Gemfile:
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
 Or install it yourself as:
 
@@ -40,12 +40,12 @@ Or install it yourself as:
 
 ## Usage
 
-When included in a Rails project, two default loggers are defined: 
+When included in a Rails project, two default loggers are defined:
 
     SmarterLogging.anomaly_logger
     SmarterLogging.activity_logger
 
-Each of them provides a `log()` method. 
+Each of them provides a `log()` method.
 
 As a shortcut, you can `include SmarterLogging` and do this:
 
@@ -61,53 +61,53 @@ You can either use the above two functioncalls throughout your code, or include 
 ### Logging Anomalies
  Anomaly logs are meant to be used for errors, exceptions and caught unexpected behavior.
 
-      include SmarterLogging
-             # you can use a single-line log statement, with a hash of all key=value pairs
-      log_anomaly( :invalid_parameter , {key1: 'value 1', key2: 'value 2'}     
-      
-      # or you can use a block - this will add a key `duration` to the log line.
+```ruby
+require 'smarter_logging'
+include SmarterLogging
+
+# you can use a single-line log statement, with a hash of all key=value pairs
+log_anomaly( :invalid_parameter , {key1: 'value 1', key2: 'value 2'}
+
+if parameters_valid?(params)
+  # do something useful
+
+  log_activity( :user_parameters, params )
+
+else
+  # or you can use a block - this will add a key `duration` to the log line.
+  log_anomaly( :user_invalid_parameters ) do |log_data|
+    log_data.merge( invalid_parameter_hash )
+
+     # some other code
+  end
+end
+```
 
 
-      if parameters_valid?(params)
-      
-        # do something useful
-        
-        log_activity( :user_parameters, params )
-        
-      else 
-        log_anomaly( :user_invalid_parameters ) do |logdata|		    
-           log_data.merge( invalid_parameter_hash )
-
-			 # some other code      	  	
-			 
-        end
-      end
-
-      
-      
 ### Logging Activities
 
 Anomaly logs are meant to be used for reporting on expected behavior.
 
-      include SmarterLogging
-      
-      # you can use a single-line log statement, with a hash of all key=value pairs
-      log_activity( :user_signed_up, {user_id: current_user.id} )
-      => time=2017-01-30T23:15:20.689Z env=development activity=user_signed_up user_id=123
-      
-      # or you can use a block - this will add a key `duration` to the log line.
-      log_activity( :user_updated ) do |logdata|
-	     begin
-	     
-          # update some values in user record here
-          
-          logdata[:result] = :sucess
-                   rescue => e
-    	    log_data[:error_message] = e.message
-      	  	
-           logdata[:result] = :failure
-        end
-      end
+```ruby
+require 'smarter_logging'
+include SmarterLogging
+
+# you can use a single-line log statement, with a hash of all key=value pairs
+log_activity( :user_signed_up, {user_id: current_user.id} )
+#=> time=2017-01-30T23:15:20.689Z env=development activity=user_signed_up user_id=123
+
+# or you can use a block - this will add a key `duration` to the log line.
+log_activity( :user_updated ) do |log_data|
+  begin
+    # update some values in user record here
+
+    log_data[:result] = :sucess
+  rescue => e
+    log_data[:error_message] = e.message
+    log_data[:result] = :failure
+  end
+end
+```
 
 ## Development
 
