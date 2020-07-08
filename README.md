@@ -1,18 +1,21 @@
 # SmarterLogging
 
-SmarterLogging helps you log mission critical data in key=value and single-line format, so it can be easily analyzed.
+SmarterLogging helps you standardize the log format for your mission critical data in a single-line format, using either key=value format or JSON format, so it can be easily ingested for data analytics.
 The format lends itself to being easily importable by SumoLogic and Splunk.
 
+Ingesting the Rails logger format in Splunk or Sumologic can be painful, because it is a multi-line format, and what you log from Rails is typically not standardized.
+
+This gem is opinionated and adds standard fields, such at the UTC timestamp, durations, and a request ID, and helps separate "anomalies" from "activities".
 The main idea is to have dedicated log files for `activities` which happen during normal operations, as well as `anomalies` which happen when something unexpected happens.
 
-Each log line starts with a UTC timestamp in [ISO8601 format](https://en.wikipedia.org/wiki/ISO_8601), and contains space-separated key=value pairs. If a value contains spaces, it is quoted: `key="value"`.
+When using the key=value format, each log line starts with a UTC timestamp in [ISO8601 format](https://en.wikipedia.org/wiki/ISO_8601), and contains space-separated key=value pairs. If a value contains spaces, it is quoted: `key="value"`.
 The advantage of ISO6801 timestamps is that they are both standardized / easy to parse, as well as human readable.
 
       time=2017-01-30T21:21:04.013Z activity=some_unique_name key1=value1 key2="value 2"
 
-The only place where this gem is opinionated is that UTC time is used for logging.
+The only place where this gem is very opinionated is that UTC time is used for logging.
 
-**Tip:** If you are currently not using UTC time in your application, you should seriously consider doing that - it makes it much easier analyzing logs and errors when dealing with clients which can be anywhere in the world.
+**Tip:** If you are currently not using UTC time in your application, you should seriously consider doing that - it makes it much easier analyzing logs and errors when dealing with clients and servers which can be anywhere in the world.
 
 Key goals:
 
