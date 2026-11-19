@@ -9,7 +9,8 @@ module SmarterLogging
 
     def _log(data)
       # If activity logging broke, make sure we log it as an anomaly:
-      data[:anomaly] = data.delete(:activity) if data[:activity]
+      # (keep anomaly= in the position of activity=, right after the standard keys)
+      data = {:anomaly => data.delete(:activity)}.merge( data ) if data[:activity]
       super
     end
   end

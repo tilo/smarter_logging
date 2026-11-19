@@ -1,13 +1,16 @@
 require 'fileutils'
+require 'logger'
 
 module SmarterLogging
   class BaseLogger
+    # characters which are escaped inside a quoted value, so each log entry stays on one line and can be parsed
+    ESCAPES = { '\\' => '\\\\', '"' => '\\"', "\n" => '\\n', "\r" => '\\r' }.freeze
 
     def initialize(log_filename)
       if defined?(Rails)
         log_filename = "#{Rails.root}/log/#{log_filename}"
       else
-        FilUtils.mkdir './log'
+        FileUtils.mkdir_p './log'
         log_filename = "./log/#{log_filename}"
       end
       @logger = Logger.new(log_filename)
@@ -50,14 +53,14 @@ module SmarterLogging
     # lowest-level logging method:
     def _log(data)
       if exception = data.delete(:exception)
-        data[:error] = [exception.class, exception.message].join[' : ']
-        data[:backtrace] = exception.backtrace[0..5].join(' | ')
+        data[:error] = [exception.class, exception.message].join(' : ')
+        data[:backtrace] = exception.backtrace[0..5].join(' | ') if exception.backtrace
       end
 
       extra_data = {
         :time => Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%LZ"),
-        :env => Rails.env,
       }
+      extra_data[:env] = Rails.env if defined?(Rails)
       SmarterLogging::ControllerHelper::KEYS.each do |key|
         extra_data[key] = Thread.current[key] if Thread.current[key]
       end
@@ -70,18 +73,28 @@ module SmarterLogging
     private
     # reformat incoming values, and make sure they are not listed in the Rails Filter Parameters
     def reformat(data)
-      filtered_keys = Rails.application.config.filter_parameters.map{|x| x.to_s}
       result = []
-      data.each do |k,v|
-        if filtered_keys.include?(k.to_s)
-          v = '[FILTERED]'
-        elsif v =~ /\s/  # quote values with spaces
-          v = "\"#{v}\""
+      filter(data).each do |k,v|
+        if v.to_s =~ /[\s"]/  # quote values with whitespace or double quotes
+          v = "\"#{v.to_s.gsub(/[\\"\n\r]/, ESCAPES)}\""
         end
 
         result << "#{k}=#{v}"
       end
       result.join(' ')
+    end
+
+    # replace values of keys listed in Rails.application.config.filter_parameters with '[FILTERED]',
+    # using the same matching rules as Rails (partial, case-insensitive matches; Regexps; Procs)
+    def filter(data)
+      return data unless defined?(Rails)
+
+      filters = Rails.application.config.filter_parameters
+      if defined?(ActiveSupport::ParameterFilter)
+        ActiveSupport::ParameterFilter.new(filters).filter(data)
+      else # Rails < 6.0
+        ActionDispatch::Http::ParameterFilter.new(filters).filter(data)
+      end
     end
 
   end
