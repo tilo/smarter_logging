@@ -57,6 +57,16 @@ As a shortcut, you can `include SmarterLogging` and do this:
 
 You can either use the above two functioncalls throughout your code, or include the module `SmarterLogging` and use the methods directly throughout your code.
 
+### Request ID (RQID)
+
+When a controller includes `SmarterLogging::ControllerHelper`, each log line gets a `rqid` key. The RQID is read from the request header `X-RQID`, so services which call each other can pass on the RQID of the first call. If the header is missing or empty, a new random RQID is generated (`SecureRandom.hex(24)`).
+
+To read the RQID from a different request header, set it in an initializer:
+
+```ruby
+SmarterLogging.request_id_header = 'X-Request-Id'
+```
+
 ## Examples
 
 **Tip:** make sure that you use a globally unique naming convention for your anomaly and activity names -- this way you can pin-point what went wrong, and where it went wrong.

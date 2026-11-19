@@ -14,6 +14,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/tilo/smarter_logging"
   spec.license       = "MIT"
 
+  spec.metadata["changelog_uri"] = "https://github.com/tilo/smarter_logging/blob/master/CHANGELOG.md"
+
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
@@ -21,7 +23,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "logger"
+
   spec.add_development_dependency "bundler"
+  spec.add_development_dependency "activesupport", ">= 6.0"
   spec.add_development_dependency "rake", ">= 12.3.3"
   spec.add_development_dependency "rspec", "~> 3.0"
 end
